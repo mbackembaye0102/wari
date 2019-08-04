@@ -6,6 +6,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Partenaire;
+
 
 /**
  * @ApiResource()
@@ -21,7 +23,7 @@ class Compte
     private $id;
 
     /**
-     * @ORM\Column(type="bigint")
+     * @ORM\Column(type="string")
      */
     private $numeroCompte;
 
@@ -38,7 +40,7 @@ class Compte
     private $depots;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\partenaire", inversedBy="comptePartenaire")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire", inversedBy="comptePartenaire")
      * @ORM\JoinColumn(nullable=false)
      */
     private $partenaire;
@@ -53,12 +55,12 @@ class Compte
         return $this->id;
     }
 
-    public function getNumeroCompte(): ?int
+    public function getNumeroCompte(): ?string
     {
         return $this->numeroCompte;
     }
 
-    public function setNumeroCompte(int $numeroCompte): self
+    public function setNumeroCompte(string $numeroCompte): self
     {
         $this->numeroCompte = $numeroCompte;
 

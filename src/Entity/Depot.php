@@ -2,8 +2,11 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use App\Entity\Compte;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+
 
 /**
  * @ApiResource()
@@ -24,12 +27,12 @@ class Depot
     private $montant;
 
     /**
-     * @ORM\Column(type="bigint")
+     * @ORM\Column(type="datetime")
      */
     private $dateDepot;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\compte", inversedBy="depots")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Compte", inversedBy="depots")
      * @ORM\JoinColumn(nullable=false)
      */
     private $compte;
@@ -51,12 +54,12 @@ class Depot
         return $this;
     }
 
-    public function getDateDepot(): ?int
+    public function getDateDepot(): ?\DateTimeInterface
     {
         return $this->dateDepot;
     }
 
-    public function setDateDepot(int $dateDepot): self
+    public function setDateDepot(\DateTimeInterface $dateDepot): self
     {
         $this->dateDepot = $dateDepot;
 

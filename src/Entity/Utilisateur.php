@@ -2,11 +2,20 @@
 
 namespace App\Entity;
 
+use App\Entity\Profil;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
+use App\Controller\UserType;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UtilisateurRepository")
+ * @ApiResource()
+ * @Vich\Uploadable
  */
 class Utilisateur implements UserInterface
 {
@@ -44,19 +53,50 @@ class Utilisateur implements UserInterface
     private $nom;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="integer", length=20)
      */
     private $telephone;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $statut;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\partenaire", inversedBy="utilisateurs")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire", inversedBy="utilisateurs")
      */
     private $partenaire;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Profil", inversedBy="utilisateurs")
+     */
+    private $profil;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @var string
+     */
+    private $imageName;
+
+
+      /**
+     * NOTE: This is not a mapped field of entity metadata, just a simple property.
+     * 
+     * @Vich\UploadableField(mapping="mbacke", fileNameProperty="imageName")
+     * @Assert\Image(mimeTypes={"image/jpeg","image/png"})
+     * 
+     * @var File
+     */
+    private $imageFile;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $updated_at;
+
+   
+
+  
 
     public function getId(): ?int
     {
@@ -155,12 +195,12 @@ class Utilisateur implements UserInterface
         return $this;
     }
 
-    public function getTelephone(): ?string
+    public function getTelephone(): ?int
     {
         return $this->telephone;
     }
 
-    public function setTelephone(string $telephone): self
+    public function setTelephone(int $telephone): self
     {
         $this->telephone = $telephone;
 
@@ -190,4 +230,67 @@ class Utilisateur implements UserInterface
 
         return $this;
     }
+
+    public function getProfil(): ?profil
+    {
+        return $this->profil;
+    }
+
+    public function setProfil(?profil $profil): self
+    {
+        $this->profil = $profil;
+
+        return $this;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
+    }
+
+    public function setImageName(string $imageName): void
+    {
+        $this->imageName = $imageName;
+
+    }
+
+
+     /**
+     * If manually uploading a file (i.e. not using Symfony Form) ensure an instance
+     * of 'UploadedFile' is injected into this setter to trigger the update. If this
+     * bundle's configuration parameter 'inject_on_load' is set to 'true' this setter
+     * must be able to accept an insAttempted to call an undefined method named &quot;all&quot; of class &quot;Symfony\Component\HttpFoundation\Request&quot;. (500 Internal Server Error)tance of 'File' as the bundle will inject one here
+     * during Doctrine hydration.
+     *
+     * @param null | File $imageFile
+     */
+    public function setImageFile(?File $imageFile = null): void
+    {
+        $this->imageFile = $imageFile;
+
+        // Only change the updated af if the file is really uploaded to avoid database updates.
+        // This is needed when the file should be set when loading the entity.
+        if ($this->imageFile instanceof UploadedFile) {
+            $this->updated_at = new \DateTime('now');
+        }
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updated_at): self
+    {
+        $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+  
 }
