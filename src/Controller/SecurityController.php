@@ -18,8 +18,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-
-
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @Route("/api")
@@ -29,7 +28,7 @@ class SecurityController extends AbstractController
      /**
      * @Route("/register", name="register", methods={"POST"})
      */
-    public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager){
+    public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator, SerializerInterface $serializer){
          
         $user = new Utilisateur();
          $form = $this->createForm(UtilisateurType::class, $user);
@@ -40,14 +39,14 @@ class SecurityController extends AbstractController
          $files=$request->files->all()['imageName'];
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $mdp="123456";
              $user->setPassword(
                 $passwordEncoder->encodePassword(
-                $user,
-                $form->get('plainPassword')->getData()
-                )
+                $user, $mdp  )
                 );
 
              $user->setImageFile($files);
+
             // recuperer id profil
             $repos=$this->getDoctrine()->getRepository(Profil::class);
             $profils=$repos->find($values['profil']);
@@ -68,6 +67,14 @@ class SecurityController extends AbstractController
             }
             $user->setRoles($role);
             $user->setStatut("debloquer");
+
+            $errors=$validator->validate($user);
+            if(count($errors)){
+                $errors=$serializer->serialize($errors, 'json');
+                return new Response ($errors, 500,[
+                    'content_type'=>'application/json'
+                ]);
+            }
 
              $entityManager = $this->getDoctrine()->getManager();
              $entityManager->persist($user);
@@ -107,6 +114,7 @@ class SecurityController extends AbstractController
 
         /**
      * @Route("/profils", name="add_profil", methods={"POST"})
+     *  @IsGranted("ROLE_SUPER_ADMIN")
      */
     public function addProfil(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager)
     {
@@ -115,8 +123,8 @@ class SecurityController extends AbstractController
 
         $entityManager->flush();
         $data = [
-            'status' => 201,
-            'message' => 'Le Profil a bien été ajouté'
+            'status23' => 201,
+            'message23' => 'Le Profil a bien été ajouté'
         ];
         return new JsonResponse($data, 201);
     }
@@ -133,31 +141,23 @@ class SecurityController extends AbstractController
         echo $user->getStatut();
         
         if($user->getStatut()=="bloquer"){
-            if($user->getProfil()==5){
-                $user->setRoles(["ROLE_ADMIN"]);
-            }
-            elseif($user->getProfil()=="superadmin"){
-                $user->setRoles(["ROLE_SUPER_ADMIN"]);
-            }
-            elseif($user->getProfil()==6){
-                $user->setRoles(["ROLE_USER"]);
-            }
-            elseif($user->getProfil()=="caissier"){
-                $user->setRoles(["ROLE_CAISSIER"]);
-            }
             $user->setStatut("debloquer");
-        }
-        else{
-            $user->setStatut("bloquer");
-            $user->setRoles(["ROLE_USERLOCK"]);
+            $data = [
+                'status' => 200,
+                'message' => 'utilisateur a été débloqué'
+            ];
+            return new JsonResponse($data);
         }
 
-        $entityManager->flush();
-        $data = [
-            'status' => 200,
-            'message' => 'utilisateur a changé de statut (bloqué/débloqué)'
-        ];
-        return new JsonResponse($data);
+        else{
+            $user->setStatut("bloquer");
+            $data = [
+                'status' => 200,
+                'message' => 'utilisateur a été bloqué'
+            ];
+            return new JsonResponse($data);
+        }
+       
     }
 
 

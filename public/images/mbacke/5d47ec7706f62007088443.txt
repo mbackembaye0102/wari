@@ -1,0 +1,5 @@
+systemctl stop sonarqube.service
+systemctl stop jenkins.service
+systemctl stop nginx.service
+systemctl restart apache2.service
+

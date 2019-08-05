@@ -39,7 +39,6 @@ security:
         #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
         #- { path: ^/api/register, roles: ROLE_ADMIN }
         - { path: ^/api/register, roles: ROLE_SUPER_ADMIN}
-        # - { path: ^/api/depots, roles: ROLE_ADMIN}
-        # - { path: ^/api/depots, roles: ROLE_USER}
+        - { path: ^/api/depots, roles: ROLE_CAISSIER}
 
    

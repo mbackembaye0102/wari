@@ -28,6 +28,7 @@ class TransactionController extends AbstractController
 {
     /**
      * @Route("/depots", name="add_depot", methods={"POST"})
+      *@IsGranted("ROLE_CAISSIER")
 
      */
     
@@ -42,8 +43,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
         $form->submit($data);
         if($form->isSubmitted()){  
              $depot->getMontant();
-            
-            if ($depot->getMontant()>=75000) {
+                if ($depot->getMontant()>=75000) {
                 $compte= $depot->getCompte();
                 $compte->setSolde($compte->getSolde()+$depot->getMontant());
                 $entityManager = $this->getDoctrine()->getManager();
@@ -66,7 +66,8 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
     
     
      /**
-     * @Route("/comptes", name="add_compte", methods={"POST"})
+     * @Route("/comptes", name="add_compte", methods={"POST"}) 
+     * @IsGranted("ROLE_SUPER_ADMIN")
      */
     public function addCompte(Request $request,EntityManagerInterface $entityManager){
 

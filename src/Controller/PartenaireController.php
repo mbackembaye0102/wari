@@ -50,7 +50,7 @@ class PartenaireController extends AbstractController
      * @Route("/partenaires", name="add_partenaire", methods={"POST"})
      * @IsGranted("ROLE_SUPER_ADMIN")
      */
-    public function addPartenaire(Request $request, UserPasswordEncoderInterface $passwordEncoder,EntityManagerInterface $entityManager){
+    public function addPartenaire(Request $request, UserPasswordEncoderInterface $passwordEncoder,EntityManagerInterface $entityManager,ValidatorInterface $validator, SerializerInterface $serializer){
          
         $partenaire = new Partenaire();
         $form = $this->createForm(PartenaireType::class, $partenaire);
@@ -75,18 +75,13 @@ class PartenaireController extends AbstractController
          $values=$request->request->all();
          $form->submit($values);
          $files=$request->files->all()['imageName'];
-
+            $mdp="123456";
              $user->setPassword(
                 $passwordEncoder->encodePassword(
-                $user,
-                $form->get('plainPassword')->getData()
-                )
+                $user,$mdp)
                 );
 
              $user->setImageFile($files);
-
-         
-
          
             $user->setRoles(["ROLE_ADMIN"]);
             $user->setStatut("debloquer");
@@ -95,7 +90,13 @@ class PartenaireController extends AbstractController
                  $repos=$this->getDoctrine()->getRepository(Partenaire::class);
                  $partenaires=$repos->find($partenaire->getId());
                  $user->setPartenaire($partenaires);
-
+                 $errors=$validator->validate($user);
+                 if(count($errors)){
+                     $errors=$serializer->serialize($errors, 'json');
+                     return new Response ($errors, 500,[
+                         'content_type'=>'application/json'
+                     ]);
+                 }
              $entityManager = $this->getDoctrine()->getManager();
              $entityManager->persist($user);
              $entityManager->flush();
@@ -120,31 +121,20 @@ class PartenaireController extends AbstractController
                  $partenaires=$repos->find($partenaire->getId());
                  $compte->setPartenaire($partenaires);
      
-
-
-
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($compte);
                 $entityManager->persist($user);
                 $entityManager->persist($partenaire);
 
                 $entityManager->flush();
-     
-                
-     
-             
+
              $data = [
                 'status1' => 201,
                 'message1' => 'Le partenaire , son admin avec son compte ont été bien cree '
             ];
  
             return new JsonResponse($data, 201);
-          
-         
-      
 
-
-     
     
     }
     $data = [
@@ -177,8 +167,8 @@ class PartenaireController extends AbstractController
         }
         $entityManager->flush();
         $data = [
-            'status' => 200,
-            'message' => 'Le Partenaire a bien été mis à jour'
+            'status14' => 200,
+            'message14' => 'Le Partenaire a bien été mis à jour'
         ];
         return new JsonResponse($data);
     }
@@ -197,17 +187,23 @@ class PartenaireController extends AbstractController
         if($partenaire->getStatut()=="bloquer"){
             
             $partenaire->setStatut("debloquer");
+            $entityManager->flush();
+            $data = [
+                'status' => 200,
+                'message' => 'Partenaire a été débloqué'
+            ];
+            return new JsonResponse($data);
         }
         else{
             $partenaire->setStatut("bloquer");
+            $entityManager->flush();
+            $data = [
+                'status' => 200,
+                'message' => 'Partenaire a été bloqué'
+            ];
+            return new JsonResponse($data);
         }
-
-        $entityManager->flush();
-        $data = [
-            'status' => 200,
-            'message' => 'Partenaire a changé de statut (bloqué/débloqué)'
-        ];
-        return new JsonResponse($data);
+       
     }
 
 }

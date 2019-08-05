@@ -3,12 +3,13 @@
 namespace App\Entity;
 
 use App\Entity\Profil;
-use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\ORM\Mapping as ORM;
 use App\Controller\UserType;
+use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints\Image;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -28,6 +29,7 @@ class Utilisateur implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
      */
     private $username;
 
@@ -44,16 +46,20 @@ class Utilisateur implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
      */
     private $prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
      */
     private $nom;
 
     /**
-     * @ORM\Column(type="integer", length=20)
+     * @ORM\Column(type="integer", length=20, unique=true)
+     * @Assert\Positive
+     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
      */
     private $telephone;
 
@@ -83,8 +89,10 @@ class Utilisateur implements UserInterface
      * NOTE: This is not a mapped field of entity metadata, just a simple property.
      * 
      * @Vich\UploadableField(mapping="mbacke", fileNameProperty="imageName")
-     * @Assert\Image(mimeTypes={"image/jpeg","image/png"})
-     * 
+     * @Assert\Image(
+     * mimeTypes={"image/jpeg","image/png", "image/jpg"},
+     * mimeTypesMessage="formats autorisés : png, jpeg, jpg"
+     * )
      * @var File
      */
     private $imageFile;
@@ -94,9 +102,7 @@ class Utilisateur implements UserInterface
      */
     private $updated_at;
 
-   
 
-  
 
     public function getId(): ?int
     {
@@ -167,8 +173,7 @@ class Utilisateur implements UserInterface
      */
     public function eraseCredentials()
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        
     }
 
     public function getPrenom(): ?string

@@ -6,6 +6,8 @@ use App\Entity\Compte;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 
 /**
@@ -23,6 +25,9 @@ class Depot
 
     /**
      * @ORM\Column(type="bigint")
+     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Assert\Positive
+     * @Assert\GreaterThan(75000, message="Un salaire doit etre superieur  ou égal à 75000")
      */
     private $montant;
 
