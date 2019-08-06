@@ -64,8 +64,6 @@ class PartenaireController extends AbstractController
            $entityManager = $this->getDoctrine()->getManager();
            $entityManager->persist($partenaire);
            $entityManager->flush();
-        
-       
 
         //AJOUT ADMIN PARTENAIRE
         $user = new Utilisateur();

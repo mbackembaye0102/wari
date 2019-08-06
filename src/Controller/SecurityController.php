@@ -46,7 +46,6 @@ class SecurityController extends AbstractController
                 );
 
              $user->setImageFile($files);
-
             // recuperer id profil
             $repos=$this->getDoctrine()->getRepository(Profil::class);
             $profils=$repos->find($values['profil']);
