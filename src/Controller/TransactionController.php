@@ -8,6 +8,7 @@ use App\Entity\Compte;
 use App\Form\DepotType;
 use App\Form\CompteType;
 use App\Entity\Partenaire;
+use App\Entity\Utilisateur;
 use App\Repository\PartenaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,6 +46,10 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
              $depot->getMontant();
                 if ($depot->getMontant()>=75000) {
                 $compte= $depot->getCompte();
+                    
+                    $user=$this->getUser();
+                    $depot->setUtilisateur($user);
+
                 $compte->setSolde($compte->getSolde()+$depot->getMontant());
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($compte);
@@ -92,14 +97,12 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
            $entityManager = $this->getDoctrine()->getManager();
            $entityManager->persist($compte);
            $entityManager->flush();
-
+           
             $data = [
                'status1' => 201,
                'message1' => 'Le compte a été créé'
            ];
-
            return new JsonResponse($data, 201);
-
         }
         $data = [
             'status1' => 500,

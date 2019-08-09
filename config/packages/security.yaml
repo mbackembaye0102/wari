@@ -13,6 +13,9 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        main:
+            json_login:
+                check_path: /api/login
         api:
             http_basic: ~
             pattern:  ^/api
@@ -37,8 +40,11 @@ security:
     access_control:
         #- { path: ^/api/login , roles: IS_AUTHENTICATED_ANONYMOUSLY }        
         #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-        #- { path: ^/api/register, roles: ROLE_ADMIN }
         - { path: ^/api/register, roles: ROLE_SUPER_ADMIN}
+        - { path: ^/api/comptes, roles: ROLE_SUPER_ADMIN }
+        - { path: ^/api/profils, roles: ROLE_SUPER_ADMIN }
+        - { path: ^/api/register, roles: ROLE_ADMIN }
         - { path: ^/api/depots, roles: ROLE_CAISSIER}
+     
 
    

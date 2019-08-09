@@ -3,9 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Profil;
+use App\Form\ProfilType;
 use App\Entity\Partenaire;
-use App\Entity\Utilisateur;
 
+use App\Entity\Utilisateur;
 use App\Form\UtilisateurType;
 use App\Repository\PartenaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,10 +16,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException;
 
 /**
  * @Route("/api")
@@ -34,11 +38,12 @@ class SecurityController extends AbstractController
          $form = $this->createForm(UtilisateurType::class, $user);
 
          $form->handleRequest($request);
+
          $values=$request->request->all();
          $form->submit($values);
          $files=$request->files->all()['imageName'];
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted()){
             $mdp="123456";
              $user->setPassword(
                 $passwordEncoder->encodePassword(
@@ -46,6 +51,7 @@ class SecurityController extends AbstractController
                 );
 
              $user->setImageFile($files);
+
             // recuperer id profil
             $repos=$this->getDoctrine()->getRepository(Profil::class);
             $profils=$repos->find($values['profil']);
@@ -53,19 +59,48 @@ class SecurityController extends AbstractController
 
             $role=[];
             if($profils->getLibelle() == "admin"){
+                if($this->getUser()->getRoles()[0]!='ROLE_SUPER_ADMIN' 
+                && $this->getUser()->getRoles()[0]!='ROLE_ADMIN' ){
+                    return $this->json([
+                        'message188' => 'Vous n\'avez pas les droits de creer un admin'
+                    ]);
+                }
                 $role=(["ROLE_ADMIN"]);
             }
+            
             elseif($profils->getLibelle() == "user"){
+                if($this->getUser()->getRoles()[0]!='ROLE_ADMIN'){
+                    return $this->json([
+                        'message187' => 'Vous n\'avez pas les droits de creer un user simple'
+                    ]);
+                }
                 $role=(["ROLE_USER"]);
             }
-            elseif($profils->getLibelle() == "caissier"){
+            elseif($profils->getLibelle() == "caissier"){   
+                
+                if($this->getUser()->getRoles()[0]!='ROLE_SUPER_ADMIN'){
+                    return $this->json([
+                        'message18' => 'Vous n\'avez pas les droits de creer un caissier'
+                    ]);
+                }
+                
                 $role=(["ROLE_CAISSIER"]);
+                
             }
             elseif( $profils->getLibelle() == "superadmin"){
+                if($this->getUser()->getRoles()[0]!='ROLE_SUPER_ADMIN'){
+                    return $this->json([
+                        'message18' => 'Vous n\'avez pas les droits de creer un super admin'
+                    ]);
+                }
                 $role=(["ROLE_SUPER_ADMIN"]);
             }
             $user->setRoles($role);
             $user->setStatut("debloquer");
+
+            $users=$this->getUser()->getPartenaire();
+            //var_dump($users); die();
+            $user->setPartenaire($users);
 
             $errors=$validator->validate($user);
             if(count($errors)){
@@ -79,55 +114,117 @@ class SecurityController extends AbstractController
              $entityManager->persist($user);
              $entityManager->flush();
              $data = [
-                'status1' => 201,
-                'message1' => 'L\'utilisateur a été créé'
+                'status18' => 201,
+                'message18' => 'L\'utilisateur a été créé'
             ];
-
             return new JsonResponse($data, 201);
          }
-         
 
         $data = [
             'status2' => 500,
             'message2' => 'Vous devez renseigner les clés username et password'
         ];
         return new JsonResponse($data, 500);
-    
+
     }
-   
-  
+
+
+    private $encoder;
+
+    public function __construct(UserPasswordEncoderInterface $encoder)
+    {
+      $this->encoder = $encoder;
+    }
+    
+
     /**
      * @Route("/login", name="login", methods={"POST"})
+    * @param JWTEncoderInterface $JWTEncoder
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException
      */
-    public function login(Request $request)
+    public function login(Request $request,JWTEncoderInterface $JWTEncoder)
     {
+        $values = json_decode($request->getContent());        
 
-        $user = $this->getUser();
-        return $this->json([
+        $repo = $this->getDoctrine()->getRepository(Utilisateur::class);
+        $user = $repo-> findOneBy(['username' => $values->username]);
+
+        
+
+        // if(!$user ){
+        //     $data = [
+        //         'status2' => 400,
+        //         'message2' => 'Username incorrect'
+        //     ];
+        //     return new JsonResponse($data);
+        // }
+
+        // $pass = $this->encoder->isPasswordValid($user, $values->password);
+        // if(!$pass){
+        //      $data = [
+        //     'status2' => 400,
+        //     'message2' => 'Mot de Pass incorrect'
+        // ];
+        // return new JsonResponse($data);
+        // }
+       
+    if($user->getStatut()!=null && $user->getRoles()!="ROLE_SUPER_ADMIN" && $user->getPartenaire()!=null){
+        if( $user->getStatut()=="bloquer"){
+            return $this->json([
+                'message10'=> $user->getUsername().' Nous sommes désolé, ACCÉS REFUSÉ'
+            ]);
+        }
+
+
+        elseif( $user->getPartenaire()->getStatut()=="bloquer"){
+            return $this->json([
+                'message10' => 'ACCÉS REFUSÉ, Votre partenaire  du nom de '.$user->getPartenaire()->getEntreprise().'  est bloqué'
+            ]);
+        }
+    }
+        
+
+
+        $token = $JWTEncoder->encode([
             'username' => $user->getUsername(),
-            'roles' => $user->getRoles()
+            'exp' => time() + 86400 // 1 day expiration
+        ]);
+        return $this->json([
+            'token' => $token
         ]);
     }
 
-   
-
-        /**
+    /**
      * @Route("/profils", name="add_profil", methods={"POST"})
-     *  @IsGranted("ROLE_SUPER_ADMIN")
      */
     public function addProfil(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager)
     {
-        $profil = $serializer->deserialize($request->getContent(), Profil::class, 'json');
-        $entityManager->persist($profil);
+        $profil = new Profil();
+        $form = $this->createForm(ProfilType::class, $profil);
 
-        $entityManager->flush();
+        $form->handleRequest($request);
+        $values=$request->request->all();
+        $form->submit($values);
+
+        if ($form->isSubmitted()) {
+
+           
+           $entityManager = $this->getDoctrine()->getManager();
+           $entityManager->persist($profil);
+           $entityManager->flush();
+           
+            $data = [
+               'status1' => 201,
+               'message16' => 'Le Profil a été créé'
+           ];
+           return new JsonResponse($data, 201);
+        }
         $data = [
-            'status23' => 201,
-            'message23' => 'Le Profil a bien été ajouté'
+            'status1' => 500,
+            'message14' => 'L\'insertion à echoué'
         ];
-        return new JsonResponse($data, 201);
+        return new JsonResponse($data, 500);
     }
-
 
      /**
      * @Route("/users/bloquer", name="userBlock", methods={"GET","POST"})
@@ -137,24 +234,31 @@ class SecurityController extends AbstractController
     {
         $values = json_decode($request->getContent());
         $user=$userRepo->findOneByUsername($values->username);
-        echo $user->getStatut();
-        
-        if($user->getStatut()=="bloquer"){
-            $user->setStatut("debloquer");
-            $data = [
-                'status' => 200,
-                'message' => 'utilisateur a été débloqué'
-            ];
-            return new JsonResponse($data);
-        }
+        //echo $user->getStatut();
 
+        if($user->getUsername()== "Kabirou"){
+            
+            return $this->json([
+                'message1' =>'HEE KHANAA DAGUAA DOF KI SUPER ADMIN LEU KENE DOUKO BLOKÉ'
+            ]);
+           
+        }
+        elseif($user->getStatut()=="bloquer"){
+            $user->setStatut("debloquer");
+            $entityManager->flush();
+
+            return $this->json([
+                'message1' =>$user->getUsername()."  vous etes débloqué"
+            ]);
+           
+        }
+        
         else{
             $user->setStatut("bloquer");
-            $data = [
-                'status' => 200,
-                'message' => 'utilisateur a été bloqué'
-            ];
-            return new JsonResponse($data);
+            $entityManager->flush();
+            return $this->json([
+                'message1' =>$user->getUsername()."  vous etes bloqué"
+            ]);
         }
        
     }
