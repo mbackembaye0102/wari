@@ -3,12 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\Depot;
-use App\Entity\Compte;
+use App\Entity\Tarif;
 
+use App\Entity\Compte;
 use App\Form\DepotType;
 use App\Form\CompteType;
+use App\Entity\Expediteur;
 use App\Entity\Partenaire;
+use App\Entity\Transaction;
 use App\Entity\Utilisateur;
+use App\Entity\Beneficiaire;
+use App\Form\ExpediteurType;
+use App\Form\TransactionType;
+use App\Form\BeneficiaireType;
 use App\Repository\PartenaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +27,6 @@ use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
 
 /**
  * @Route("/api")
@@ -110,5 +116,98 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
         ];
         return new JsonResponse($data, 500);
     }
-   
+
+        
+     /**
+     * @Route("/envoie", name="envoie", methods={"POST"}) 
+     */
+    public function envoie (Request $request,EntityManagerInterface $entityManager){
+        // AJOUT EXPEDITEUR
+       $expediteur= new Expediteur();
+       $form = $this->createForm(ExpediteurType::class, $expediteur);
+       $values =$request->request->all();
+
+
+       $form->handleRequest($request);
+       $form->submit($values);
+       if ($form->isSubmitted()) {
+              // AJOUT Beneficiaire
+       $beneficiaire= new Beneficiaire();
+       $form = $this->createForm(BeneficiaireType::class, $beneficiaire);
+       $form->handleRequest($request);
+       $values=$request->request->all();
+       $form->submit($values);
+
+
+         // AJOUT OPERATION
+         $transaction= new Transaction();
+         $form = $this->createForm(TransactionType::class, $transaction);
+         $form->handleRequest($request);
+         $values=$request->request->all();
+         $form->submit($values);
+        $transaction->setDateEnvoie(new \DateTime());
+        $e="W";
+        $c=rand(1000000000000,9999999999999);
+        $codes=$e.$c;
+        $user=$this->getUser();
+        $transaction->setGuichetier($user);
+        $transaction->setGuichetier($user);
+        $transaction->setCode($codes);
+
+          // recuperer id de l'expediteur
+          $transaction->setExpediteur($expediteur);
+          
+           // recuperer id du beneficiaire
+           $transaction->setBeneficiaire($beneficiaire);
+
+           // recuperer la valeur du frais
+           $repository=$this->getDoctrine()->getRepository(Tarif::class);
+           $commission=$repository->findAll();
+            $montant=$transaction->getMontant();
+           foreach ($commission as $values ) {
+                 $values->getBorneInferieure();
+                $values->getBorneSuperieure();
+               $values->getValeur();
+            if($montant >= $values->getBorneInferieure() &&  $montant <= $values->getBorneSuperieure()){
+                $valeur=$values->getValeur();
+            }
+
+           }
+
+           $transaction->setFrais($valeur);
+
+           $wari=($valeur*40)/100;
+           $part=($valeur*20)/100;
+           $etat=($valeur*30)/100;
+
+           $transaction->setCommissionWari($wari);
+           $transaction->setCommissionPartenaire($part);
+           $transaction->setCommissionEtat($etat);
+
+
+        $total=$montant+$valeur;
+        $transaction->setTotal($total);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($expediteur);
+        $entityManager->persist($beneficiaire);
+        $entityManager->persist($transaction);
+        $entityManager->flush();
+       
+
+         
+           
+            $data = [
+               'status1' => 201,
+               'message1' => 'L\'envoie  a été effectué'
+           ];
+           return new JsonResponse($data, 201);
+        }
+        $data = [
+            'status1' => 500,
+            'message1' => 'ERREUR, VERIFIER LES DONNÉES SAISIES'
+        ];
+        return new JsonResponse($data, 500);
+    }
+
 }

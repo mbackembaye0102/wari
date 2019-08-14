@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Compte;
 use App\Entity\Utilisateur;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -18,6 +19,13 @@ public function __construct(UserPasswordEncoderInterface $encoder)
 }
     public function load(ObjectManager $manager)
     {
+
+        $compte = new Compte();
+            $a="SA";
+            $b=rand(1000000000000,9999999999999);
+            $numerocompte=$a.$b;
+            $compte->setNumeroCompte($numerocompte);
+            $compte->setSolde(1);
        
         $user = new Utilisateur();
         $user->setUsername('Kabirou');
@@ -31,10 +39,14 @@ public function __construct(UserPasswordEncoderInterface $encoder)
         $user->setTelephone(76129635);
         $user->setImageName("image.jpg");
         $user->setUpdatedAt(new \DateTime('now'));
+        
+        $user->setCompte($compte);
 
 
 
         $manager->persist($user);
+        $manager->persist($compte);
+
         $manager->flush();
     }
 }

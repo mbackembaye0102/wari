@@ -113,6 +113,9 @@
     "doctrine/reflection": {
         "version": "v1.0.0"
     },
+    "dompdf/dompdf": {
+        "version": "v0.8.3"
+    },
     "fig/link-util": {
         "version": "1.0.0"
     },

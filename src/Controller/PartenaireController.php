@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use App\Entity\Compte;
 use App\Entity\Profil;
 use App\Form\CompteType;
@@ -28,6 +31,41 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
  */
 class PartenaireController extends AbstractController
 {
+
+    /**
+     * @Route("/", name="index_partenaire", methods={"GET"})
+     */
+    public function index()
+    {
+        // Configurez Dompdf selon vos besoins
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        
+        // Instancier Dompdf avec nos options
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Récupère le code HTML généré dans notre fichier twig
+        $html = $this->renderView('partenaire/index.html.twig', [
+            'title' => "Welcome to our PDF Test"
+        ]);
+        
+        // Charger du HTML dans Dompdf
+        $dompdf->loadHtml($html);
+        
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'portrait');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        
+   
+        //Exporter le PDF généré dans le navigateur (vue intégrée)
+        $dompdf->stream("testpdf.pdf", [
+            "Attachment" => false
+        ]);
+
+    }
     
     /**
      * @Route("/partenaire/{id}", name="show_partenaire", methods={"GET"})
@@ -42,7 +80,7 @@ class PartenaireController extends AbstractController
         return new Response($data, 200, [
             'Content-Type' => 'application/json'
         ]);
-    }
+    } 
 
   
 
