@@ -21,10 +21,13 @@ public function __construct(UserPasswordEncoderInterface $encoder)
     {
 
         $compte = new Compte();
+        // generation d'un numero de compte
             $a="SA";
             $b=rand(1000000000000,9999999999999);
             $numerocompte=$a.$b;
             $compte->setNumeroCompte($numerocompte);
+            
+            // allouer un solde par defaut 
             $compte->setSolde(1);
        
         $user = new Utilisateur();

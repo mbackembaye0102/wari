@@ -119,7 +119,7 @@ class PartenaireController extends AbstractController
 
              $user->setImageFile($files);
          
-            $user->setRoles(["ROLE_ADMIN"]);
+            $user->setRoles(["ROLE_ADMIN_PARTENAIRE"]);
             $user->setStatut("debloquer");
 
             // recuperer id du partenaire

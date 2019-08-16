@@ -31,14 +31,13 @@ class SecurityController extends AbstractController
 {
      /**
      * @Route("/register", name="register", methods={"POST"})
+     *@IsGranted({"ROLE_ADMIN_PARTENAIRE", "ROLE_SUPER_ADMIN"})
      */
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator, SerializerInterface $serializer){
          
         $user = new Utilisateur();
          $form = $this->createForm(UtilisateurType::class, $user);
-
          $form->handleRequest($request);
-
          $values=$request->request->all();
          $form->submit($values);
          $files=$request->files->all()['imageName'];
@@ -49,7 +48,6 @@ class SecurityController extends AbstractController
                 $passwordEncoder->encodePassword(
                 $user, $mdp  )
                 );
-
              $user->setImageFile($files);
 
             // recuperer id profil
@@ -69,7 +67,8 @@ class SecurityController extends AbstractController
             }
             
             elseif($profils->getLibelle() == "user"){
-                if($this->getUser()->getRoles()[0]!='ROLE_ADMIN'){
+                if($this->getUser()->getRoles()[0]!='ROLE_ADMIN_PARTENAIRE'
+                && $this->getUser()->getRoles()[0]!='ROLE_ADMIN'){
                     return $this->json([
                         'message187' => 'Vous n\'avez pas les droits de creer un user simple'
                     ]);
@@ -78,14 +77,13 @@ class SecurityController extends AbstractController
             }
             elseif($profils->getLibelle() == "caissier"){   
                 
-                if($this->getUser()->getRoles()[0]!='ROLE_SUPER_ADMIN'){
+                if($this->getUser()->getRoles()[0]!='ROLE_SUPER_ADMIN'
+                && $this->getUser()->getRoles()[0]!='ROLE_ADMIN_SUPER'){
                     return $this->json([
                         'message18' => 'Vous n\'avez pas les droits de creer un caissier'
                     ]);
                 }
-                
                 $role=(["ROLE_CAISSIER"]);
-                
             }
             elseif( $profils->getLibelle() == "superadmin"){
                 if($this->getUser()->getRoles()[0]!='ROLE_SUPER_ADMIN'){
@@ -95,11 +93,28 @@ class SecurityController extends AbstractController
                 }
                 $role=(["ROLE_SUPER_ADMIN"]);
             }
+            elseif( $profils->getLibelle() == "adminpartenaire"){
+                if($this->getUser()->getRoles()[0]!='ROLE_SUPER_ADMIN'
+                && $this->getUser()->getRoles()[0]!='ROLE_ADMIN_SUPER' ){
+                    return $this->json([
+                        'message18' => 'Vous n\'avez pas les droits de creer un admin partenaire'
+                    ]);
+                }
+                $role=(["ROLE_ADMIN_PARTENAIRE"]);
+            }
+            elseif( $profils->getLibelle() == "adminsuper"){
+                if($this->getUser()->getRoles()[0]!='ROLE_SUPER_ADMIN'
+                && $this->getUser()->getRoles()[0]!='ROLE_ADMIN_SUPER'){
+                    return $this->json([
+                        'message18' => 'Vous n\'avez pas les droits de creer un admin super'
+                    ]);
+                }
+                $role=(["ROLE_ADMIN_SUPER"]);
+            }
             $user->setRoles($role);
             $user->setStatut("debloquer");
 
             $users=$this->getUser()->getPartenaire();
-            //var_dump($users); die();
             $user->setPartenaire($users);
 
             $errors=$validator->validate($user);
@@ -119,13 +134,11 @@ class SecurityController extends AbstractController
             ];
             return new JsonResponse($data, 201);
          }
-
         $data = [
             'status2' => 500,
             'message2' => 'Vous devez renseigner les clés username et password'
         ];
         return new JsonResponse($data, 500);
-
     }
 
 
@@ -148,8 +161,6 @@ class SecurityController extends AbstractController
 
         $repo = $this->getDoctrine()->getRepository(Utilisateur::class);
         $user = $repo-> findOneBy(['username' => $values->username]);
-
-        
 
         // if(!$user ){
         //     $data = [

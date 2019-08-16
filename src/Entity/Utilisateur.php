@@ -310,6 +310,7 @@ class Utilisateur implements UserInterface
     public function getImageFile(): ?File
     {
         return $this->imageFile;
+
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface

@@ -15,6 +15,7 @@ use App\Entity\Utilisateur;
 use App\Entity\Beneficiaire;
 use App\Form\ExpediteurType;
 use App\Form\TransactionType;
+use App\Form\UtilisateurType;
 use App\Form\BeneficiaireType;
 use App\Repository\PartenaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +28,7 @@ use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Form\UserCompteType;
 
 /**
  * @Route("/api")
@@ -36,7 +38,6 @@ class TransactionController extends AbstractController
     /**
      * @Route("/depots", name="add_depot", methods={"POST"})
       *@IsGranted("ROLE_CAISSIER")
-
      */
     
 public function new(Request $request,EntityManagerInterface $entityManager ): Response
@@ -78,7 +79,6 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
     
      /**
      * @Route("/comptes", name="add_compte", methods={"POST"}) 
-     * @IsGranted("ROLE_SUPER_ADMIN")
      */
     public function addCompte(Request $request,EntityManagerInterface $entityManager){
 
@@ -120,8 +120,114 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
         
      /**
      * @Route("/envoie", name="envoie", methods={"POST"}) 
+     *@IsGranted({"ROLE_ADMIN", "ROLE_ADMIN_PARTENAIRE"})
      */
     public function envoie (Request $request,EntityManagerInterface $entityManager){
+        // AJOUT EXPEDITEUR
+       $expediteur= new Expediteur();
+       $form = $this->createForm(ExpediteurType::class, $expediteur);
+       $values =$request->request->all();
+       $form->handleRequest($request);
+       $form->submit($values);
+
+       if ($form->isSubmitted()) {
+        // AJOUT Beneficiaire
+       $beneficiaire= new Beneficiaire();
+       $form = $this->createForm(BeneficiaireType::class, $beneficiaire);
+       $form->handleRequest($request);
+       $values=$request->request->all();
+       $form->submit($values);
+
+         // AJOUT OPERATION
+         $transaction= new Transaction();
+         $form = $this->createForm(TransactionType::class, $transaction);
+         $form->handleRequest($request);
+         $values=$request->request->all();
+         $form->submit($values);
+
+        $transaction->setDateEnvoie(new \DateTime());
+        //generation du code
+        $e="W";
+        $c=rand(10000000,99999999);
+        $codes=$e.$c;
+        $transaction->setCode($codes);
+
+        // recuperer l'id du guichetier
+        $user=$this->getUser();
+        $transaction->setGuichetier($user);
+
+          // recuperer id de l'expediteur
+          $transaction->setExpediteur($expediteur);
+          
+           // recuperer id du beneficiaire
+           $transaction->setBeneficiaire($beneficiaire);
+
+           // recuperer la valeur du frais
+           $repository=$this->getDoctrine()->getRepository(Tarif::class);
+           $commission=$repository->findAll();
+
+           //recuperer la valeur du montant saisie
+            $montant=$transaction->getMontant();
+
+            //Verifier si le montant est disponible en solde 
+            $comptes=$this->getUser()->getCompte();
+            if($transaction->getMontant() >= $comptes->getSolde()){
+                return $this->json([
+                    'message18' => 'votre solde( '.$comptes->getSolde().' ) ne vous permez pas d\'effectuer cet envoie'
+                ]);
+               }
+            
+
+            // trouver les frais qui correspond au montant
+           foreach ($commission as $values ) {
+                 $values->getBorneInferieure();
+                $values->getBorneSuperieure();
+               $values->getValeur();
+            if($montant >= $values->getBorneInferieure() &&  $montant <= $values->getBorneSuperieure()){
+                $valeur=$values->getValeur();
+            }
+
+           }
+           $transaction->setFrais($valeur);
+
+           $wari=($valeur*40)/100;
+           $part=($valeur*20)/100;
+           $etat=($valeur*30)/100;
+
+           $comptes->setSolde($comptes->getSolde()-$transaction->getMontant()+ $wari);
+
+           $transaction->setCommissionWari($wari);
+           $transaction->setCommissionPartenaire($part);
+           $transaction->setCommissionEtat($etat);
+
+        $total=$montant+$valeur;
+        $transaction->setTotal($total);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($expediteur);
+        $entityManager->persist($beneficiaire);
+        $entityManager->persist($transaction);
+        $entityManager->flush();
+
+            $data = [
+               'status1' => 201,
+               'message1' => 'L\'envoie  a été effectué'
+           ];
+           return new JsonResponse($data, 201);
+        }
+        $data = [
+            'status1' => 500,
+            'message1' => 'ERREUR, VERIFIER LES DONNÉES SAISIES'
+        ];
+        return new JsonResponse($data, 500);
+    }
+
+
+      /**
+     * @Route("/retrait", name="retrait", methods={"POST"}) 
+     *@IsGranted({"ROLE_ADMIN", "ROLE_ADMIN_PARTENAIRE"})
+     */
+    public function retrait (Request $request,EntityManagerInterface $entityManager){
         // AJOUT EXPEDITEUR
        $expediteur= new Expediteur();
        $form = $this->createForm(ExpediteurType::class, $expediteur);
@@ -145,14 +251,18 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
          $form->handleRequest($request);
          $values=$request->request->all();
          $form->submit($values);
+
         $transaction->setDateEnvoie(new \DateTime());
+
+        //generation du code
         $e="W";
-        $c=rand(1000000000000,9999999999999);
+        $c=rand(10000000,99999999);
         $codes=$e.$c;
+        $transaction->setCode($codes);
+
+        // recuperer l'id du guichetier
         $user=$this->getUser();
         $transaction->setGuichetier($user);
-        $transaction->setGuichetier($user);
-        $transaction->setCode($codes);
 
           // recuperer id de l'expediteur
           $transaction->setExpediteur($expediteur);
@@ -164,6 +274,12 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
            $repository=$this->getDoctrine()->getRepository(Tarif::class);
            $commission=$repository->findAll();
             $montant=$transaction->getMontant();
+            $comptes=$this->getUser()->getCompte();
+            if($transaction->getMontant() >= $comptes->getSolde()){
+                return $this->json([
+                    'message18' => 'votre solde( '.$comptes->getSolde().' ) ne vous permez pas d\'effectuer cet envoie'
+                ]);
+               }
            foreach ($commission as $values ) {
                  $values->getBorneInferieure();
                 $values->getBorneSuperieure();
@@ -176,9 +292,14 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
 
            $transaction->setFrais($valeur);
 
+
+           
+
            $wari=($valeur*40)/100;
            $part=($valeur*20)/100;
            $etat=($valeur*30)/100;
+
+           $comptes->setSolde($comptes->getSolde()-$transaction->getMontant()+ $wari);
 
            $transaction->setCommissionWari($wari);
            $transaction->setCommissionPartenaire($part);
@@ -208,6 +329,30 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
             'message1' => 'ERREUR, VERIFIER LES DONNÉES SAISIES'
         ];
         return new JsonResponse($data, 500);
+    }
+     /**
+     * @Route("/addCompte/{id}", name="ajou_compte", methods={"POST"})
+     */
+    public function update_user (Request $request, Utilisateur $user,  EntityManagerInterface $entityManager)
+    {
+
+        $form = $this->createForm(UserCompteType::class, $user);
+        $data=$request->request->all();
+        
+        $form->handleRequest($request);
+        $form->submit($data);
+        $users=$user->getCompte()->getPartenaire();
+        var_dump($users); die();
+        //$comptes=$user->getCompte();
+
+
+        $entityManager->persist($user);
+            $entityManager->flush();
+            $data = [
+                'status14' => 200,
+                'message14' => 'Le compte a bien été  bien ajoute'
+            ];
+            return new JsonResponse($data);
     }
 
 }
