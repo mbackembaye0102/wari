@@ -40,14 +40,14 @@ security:
     access_control:
         #- { path: ^/api/login , roles: IS_AUTHENTICATED_ANONYMOUSLY }        
         #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/api/comptes, roles: ROLE_SUPER_ADMIN }
-        - { path: ^/api/comptes, roles: ROLE_ADMIN_SUPER }
-        - { path: ^/api/profils, roles: ROLE_SUPER_ADMIN }
-        - { path: ^/api/comptes, roles: ROLE_ADMIN_SUPER }
-        - { path: ^/api/profils, roles: ROLE_ADMIN_SUPER}
-        - { path: ^/api/depots, roles: ROLE_ADMIN_PARTENAIRE}
+        # - { path: ^/api/comptes, roles: ROLE_SUPER_ADMIN }
+        # - { path: ^/api/comptes, roles: ROLE_ADMIN_SUPER }
+        # - { path: ^/api/profils, roles: ROLE_SUPER_ADMIN }
+        # - { path: ^/api/comptes, roles: ROLE_ADMIN_SUPER }
+        # - { path: ^/api/profils, roles: ROLE_ADMIN_SUPER}
+        # - { path: ^/api/depots, roles: ROLE_ADMIN_PARTENAIRE}
         # - { path: ^/api/register, roles: ROLE_ADMIN}
-        - { path: ^/api/depots, roles: ROLE_CAISSIER}
+        # - { path: ^/api/depots, roles: ROLE_CAISSIER}
         # - { path: ^/api/envoie, roles: ROLE_USER }
         # - { path: ^/api/envoie, roles: ROLE_ADMIN_PARTENAIRE }
         # - { path: ^/api/envoie, roles: ROLE_ADMIN }

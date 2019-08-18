@@ -120,6 +120,11 @@ class Utilisateur implements UserInterface
      */
     private $transactions;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Transaction", mappedBy="guichetierRetrait")
+     */
+    private $transactionRetrait;
+
  
 
     public function __construct()
@@ -127,6 +132,7 @@ class Utilisateur implements UserInterface
         $this->depots = new ArrayCollection();
         $this->operations = new ArrayCollection();
         $this->transactions = new ArrayCollection();
+        $this->transactionRetrait = new ArrayCollection();
     }
 
 
@@ -368,36 +374,36 @@ class Utilisateur implements UserInterface
         return $this;
     }
 
-    /**
-     * @return Collection|Operation[]
-     */
-    public function getOperations(): Collection
-    {
-        return $this->operations;
-    }
+    // /**
+    //  * @return Collection|Operation[]
+    //  */
+    // public function getOperations(): Collection
+    // {
+    //     return $this->operations;
+    // }
 
-    public function addOperation(Operation $operation): self
-    {
-        if (!$this->operations->contains($operation)) {
-            $this->operations[] = $operation;
-            $operation->setGuichetier($this);
-        }
+    // public function addOperation(Operation $operation): self
+    // {
+    //     if (!$this->operations->contains($operation)) {
+    //         $this->operations[] = $operation;
+    //         $operation->setGuichetier($this);
+    //     }
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
-    public function removeOperation(Operation $operation): self
-    {
-        if ($this->operations->contains($operation)) {
-            $this->operations->removeElement($operation);
-            // set the owning side to null (unless already changed)
-            if ($operation->getGuichetier() === $this) {
-                $operation->setGuichetier(null);
-            }
-        }
+    // public function removeOperation(Operation $operation): self
+    // {
+    //     if ($this->operations->contains($operation)) {
+    //         $this->operations->removeElement($operation);
+    //         // set the owning side to null (unless already changed)
+    //         if ($operation->getGuichetier() === $this) {
+    //             $operation->setGuichetier(null);
+    //         }
+    //     }
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     /**
      * @return Collection|Transaction[]
@@ -424,6 +430,37 @@ class Utilisateur implements UserInterface
             // set the owning side to null (unless already changed)
             if ($transaction->getGuichetier() === $this) {
                 $transaction->setGuichetier(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getTransactionRetrait(): Collection
+    {
+        return $this->transactionRetrait;
+    }
+
+    public function addTransactionRetrait(Transaction $transactionRetrait): self
+    {
+        if (!$this->transactionRetrait->contains($transactionRetrait)) {
+            $this->transactionRetrait[] = $transactionRetrait;
+            $transactionRetrait->setGuichetierRetrait($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransactionRetrait(Transaction $transactionRetrait): self
+    {
+        if ($this->transactionRetrait->contains($transactionRetrait)) {
+            $this->transactionRetrait->removeElement($transactionRetrait);
+            // set the owning side to null (unless already changed)
+            if ($transactionRetrait->getGuichetierRetrait() === $this) {
+                $transactionRetrait->setGuichetierRetrait(null);
             }
         }
 

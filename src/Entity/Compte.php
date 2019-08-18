@@ -50,10 +50,13 @@ class Compte
      */
     private $utilisateurs;
 
+   
+
     public function __construct()
     {
         $this->depots = new ArrayCollection();
         $this->utilisateurs = new ArrayCollection();
+        $this->historiques = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -160,4 +163,5 @@ class Compte
 
         return $this;
     }
+
 }

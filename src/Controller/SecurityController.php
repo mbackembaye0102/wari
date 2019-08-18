@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Profil;
 use App\Form\ProfilType;
-use App\Entity\Partenaire;
+use App\Form\RetraitType;
 
+use App\Entity\Partenaire;
+use App\Entity\Transaction;
 use App\Entity\Utilisateur;
 use App\Form\UtilisateurType;
 use App\Repository\PartenaireRepository;
@@ -273,6 +275,14 @@ class SecurityController extends AbstractController
         }
        
     }
+
+
+ 
+
+
+
+
+       
 
 
 

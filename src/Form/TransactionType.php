@@ -2,10 +2,8 @@
 
 namespace App\Form;
 
-use App\Entity\Expediteur;
 use App\Entity\Transaction;
 use App\Entity\Utilisateur;
-use App\Entity\Beneficiaire;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -23,12 +21,23 @@ class TransactionType extends AbstractType
             ->add('commissionWari')
             ->add('CommissionPartenaire')
             ->add('commissionEtat')
-            ->add('guichetier',EntityType::class,['class'=>Utilisateur::class])
-            ->add('Expediteur',EntityType::class,['class'=>Expediteur::class])
-            ->add('beneficiaire',EntityType::class,['class'=>Beneficiaire::class])
             ->add('dateEnvoie')
             ->add('dateRetrait')
-            ->add('typeOp')
+            ->add('commissionRetrait')
+            ->add('prenom')
+            ->add('nom')
+            ->add('telephone')
+            ->add('numeroPiece')
+            ->add('typePiece')
+            ->add('etat')
+            ->add('prenomb')
+            ->add('nomb')
+            ->add('telephoneb')
+            ->add('numeroPieceb')
+            ->add('typePieceb')
+            ->add('guichetier',EntityType::class,['class'=>Utilisateur::class])
+            ->add('guichetierRetrait',EntityType::class,['class'=>Utilisateur::class])
+
         ;
     }
 
