@@ -200,6 +200,7 @@ class SecurityController extends AbstractController
 
         $token = $JWTEncoder->encode([
             'username' => $user->getUsername(),
+	'roles'=>$user->getRoles(),
             'exp' => time() + 86400 // 1 day expiration
         ]);
         return $this->json([
