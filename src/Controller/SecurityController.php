@@ -11,6 +11,8 @@ use App\Entity\Transaction;
 use App\Entity\Utilisateur;
 use App\Form\UtilisateurType;
 use App\Repository\PartenaireRepository;
+use App\Repository\ProfilRepository;
+
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UtilisateurRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -281,7 +283,19 @@ class SecurityController extends AbstractController
  
 
 
+/**
+     * @Route("/listerprofil", name="listerprofil", methods={"GET"})
+     */
+    public function lister(ProfilRepository $profilRepository, SerializerInterface $serializer)
+    {
+        $profils = $profilRepository->findAll();
+        
+        $data = $serializer->serialize($profils, 'json');
 
+        return new Response($data, 200, [
+            'Content-Type'=>'application/json'
+        ]);
+    }
 
        
 

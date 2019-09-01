@@ -15,7 +15,11 @@ use App\Form\PartenaireType;
 use App\Form\UtilisateurType;
 use Symfony\Component\Mime\Message;
 use App\Repository\PartenaireRepository;
+use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+Use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -254,5 +258,26 @@ class PartenaireController extends AbstractController
         }
        
     }
+
+ 
+  /**
+     * @Route("/listeruser", name="listeruser", methods={"GET", "POST"})
+     */
+    public function listeruser(UtilisateurRepository $utilisateurRepository, SerializerInterface $serializer, Request $request):Response
+    {
+        $values=$request->request->all();
+        $user=$this->getUser();
+        $partenaire=$user->getPartenaire();
+        $users=$this->getDoctrine()->getRepository('App:Utilisateur')->findBy(['partenaire'=>$partenaire]);
+        $values = $serializer->serialize($users, 'json');
+    
+       
+        return new Response(
+           $values,200,[
+               'Content-Type' => 'application/json'
+           ]
+           );
+       
+    }    
 
 }

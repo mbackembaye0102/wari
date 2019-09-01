@@ -19,6 +19,8 @@ use App\Form\TransactionType;
 use App\Form\UtilisateurType;
 use App\Form\BeneficiaireType;
 use App\Repository\PartenaireRepository;
+use App\Repository\CompteRepository;
+use App\Repository\DepotRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\TransactionRepository;
 use App\Repository\BeneficiaireRepository;
@@ -87,7 +89,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
         $values =$request->request->all();
         $form->handleRequest($request);
         $form->submit($values);
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() ) {
             $a="SA";
             $b=rand(1000000000000,9999999999999);
             $numerocompte=$a.$b;
@@ -186,6 +188,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
 
         $total=$montant+$valeur;
         $transaction->setTotal($total);
+        $transaction->setEtat('envoye');
 
         $entityManager = $this->getDoctrine()->getManager();
      
@@ -276,6 +279,35 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
                 'message14' => 'Le compte a bien été  bien ajoute'
             ];
             return new JsonResponse($data);
+    }
+
+
+/**
+     * @Route("/listercompte", name="listercompte", methods={"GET"})
+     */
+    public function lister(CompteRepository $compteRepository, SerializerInterface $serializer)
+    {
+        $comptes = $compteRepository->findAll();
+        
+        $data = $serializer->serialize($comptes, 'json');
+
+        return new Response($data, 200, [
+            'Content-Type'=>'application/json'
+        ]);
+    }
+
+       /**
+     * @Route("/listerdepot", name="listerdepot", methods={"GET"})
+     */
+    public function listerdepot(DepotRepository $depotRepository, SerializerInterface $serializer)
+    {
+        $depots = $depotRepository->findAll();
+        
+        $data = $serializer->serialize($depots, 'json');
+
+        return new Response($data, 200, [
+            'Content-Type'=>'application/json'
+        ]);
     }
 
 }
