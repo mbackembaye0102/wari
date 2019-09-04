@@ -118,6 +118,7 @@ class SecurityController extends AbstractController
             $user->setRoles($role);
             $user->setStatut("debloquer");
 
+            // recup id partenaire
             $users=$this->getUser()->getPartenaire();
             $user->setPartenaire($users);
 
@@ -166,22 +167,6 @@ class SecurityController extends AbstractController
         $repo = $this->getDoctrine()->getRepository(Utilisateur::class);
         $user = $repo-> findOneBy(['username' => $values->username]);
 
-        // if(!$user ){
-        //     $data = [
-        //         'status2' => 400,
-        //         'message2' => 'Username incorrect'
-        //     ];
-        //     return new JsonResponse($data);
-        // }
-
-        // $pass = $this->encoder->isPasswordValid($user, $values->password);
-        // if(!$pass){
-        //      $data = [
-        //     'status2' => 400,
-        //     'message2' => 'Mot de Pass incorrect'
-        // ];
-        // return new JsonResponse($data);
-        // }
        
     if($user->getStatut()!=null && $user->getRoles()!="ROLE_SUPER_ADMIN" && $user->getPartenaire()!=null){
         if( $user->getStatut()=="bloquer"){
@@ -243,19 +228,20 @@ class SecurityController extends AbstractController
     }
 
      /**
-     * @Route("/users/bloquer", name="userBlock", methods={"GET","POST"})
-     * @Route("/users/debloquer", name="userDeblock", methods={"GET","POST"})
+     * @Route("/users/statut/{id}", name="userBlock", methods={"GET","POST"})
      */
-    public function userBloquer(Request $request, UtilisateurRepository $userRepo,EntityManagerInterface $entityManager): Response
+    public function userBloquer( Utilisateur $users, Request $request, UtilisateurRepository $userRepo,EntityManagerInterface $entityManager): Response
     {
         $values = json_decode($request->getContent());
-        $user=$userRepo->findOneByUsername($values->username);
+                //var_dump($users->getId());  die();
+
+        $user=$userRepo->find($users->getId());
         //echo $user->getStatut();
 
         if($user->getUsername()== "Kabirou"){
             
             return $this->json([
-                'message1' =>'HEE KHANAA DAGUAA DOF KI SUPER ADMIN LEU KENE DOUKO BLOKÉ'
+                'message1' =>'HEE KHANAA DAGUAA DOF KI SUPER ADMIN LEU, KENE DOUKO BLOKÉ'
             ]);
            
         }

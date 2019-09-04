@@ -15,6 +15,9 @@ use App\Form\PartenaireType;
 use App\Form\UtilisateurType;
 use Symfony\Component\Mime\Message;
 use App\Repository\PartenaireRepository;
+use App\Repository\CompteRepository;
+use App\Repository\DepotRepository;
+
 use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -278,6 +281,42 @@ class PartenaireController extends AbstractController
            ]
            );
        
+    }    
+
+      /**
+     * @Route("/listercomptes", name="listercomptes", methods={"GET","POST"})
+     */
+    public function listercomptepartenaire (CompteRepository $compteRepository, SerializerInterface $serializer, Request $request):Response
+    {
+        $values=$request->request->all();
+        $user=$this->getUser();
+        $partenaire=$user->getPartenaire();
+        $comptes=$this->getDoctrine()->getRepository('App:Compte')->findBy(['partenaire'=>$partenaire]);
+        $values = $serializer->serialize($comptes, 'json');
+       
+        return new Response(
+           $values,200,[
+               'Content-Type' => 'application/json'
+           ]
+           );
+    }    
+
+    /**
+     * @Route("/listerdepots", name="listerdepots", methods={"GET","POST"})
+     */
+    public function listercomptedepots (DepotRepository $depotRepository, SerializerInterface $serializer, Request $request):Response
+    {
+        $values=$request->request->all();
+        $user=$this->getUser();
+        $compte=$user->getCompte();
+        $users=$this->getDoctrine()->getRepository('App:Depot')->findBy(['compte'=>$compte]);
+        $values = $serializer->serialize($users, 'json');
+       
+        return new Response(
+           $values,200,[
+               'Content-Type' => 'application/json'
+           ]
+           );
     }    
 
 }

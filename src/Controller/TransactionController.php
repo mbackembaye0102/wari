@@ -56,6 +56,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
         if($form->isSubmitted()){  
              $depot->getMontant();
                 if ($depot->getMontant()>=75000) {
+
                 $compte= $depot->getCompte();
                     $user=$this->getUser();
                     $depot->setUtilisateur($user);
@@ -128,9 +129,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
         $values=$request->request->all();
         $form->submit($values);
 
-
        if ($form->isSubmitted()) {
-      
         $transaction->setDateEnvoie(new \DateTime());
         //generation du code
         $e="W";
@@ -154,7 +153,8 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
             $comptes=$this->getUser()->getCompte();
             if($transaction->getMontant() >= $comptes->getSolde()){
                 return $this->json([
-                    'message18' => 'votre solde( '.$comptes->getSolde().' ) ne vous permez pas d\'effectuer cet envoie'
+                    'messagù.10e
+                    18' => 'votre solde( '.$comptes->getSolde().' ) ne vous permez pas d\'effectuer cet envoie'
                 ]);
                }
             
@@ -186,7 +186,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
            $transaction->setCommissionRetrait($retrait);
 
 
-        $total=$montant+$valeur;
+        $total=$montant+$values->getValeur();
         $transaction->setTotal($total);
         $transaction->setEtat('envoye');
 
@@ -209,48 +209,44 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
     }
 
  /**
-     * @Route("/retrait/{codes}", name="retrait" ) 
+     * @Route("/retrait", name="retrait" ) 
      *@IsGranted({"ROLE_ADMIN_PARTENAIRE", "ROLE_USERS"})
      */
-    public function retrait (Request $request,$codes,TransactionRepository $trans, EntityManagerInterface $entityManager)
+    public function retrait (Request $request,TransactionRepository $trans, EntityManagerInterface $entityManager)
     {
        $transaction= new Transaction();
         $form = $this->createForm(RetraitType::class, $transaction);
         $values =$request->request->all();
         $form->handleRequest($request);
         $form->submit($values);
+       $codes=$transaction->getCode();
+
 
         $code=$trans->findOneBy(['code'=>$codes]);
                 // var_dump($code); die();
 
-        $c=$code->getCode();
-            $statut=$code->getEtat();
-           // var_dump($statut); die();
-            if(!$codes){
-
+        //$c=$code->getCode();
+        $statut=$code->getEtat();
+       //var_dump($statut);  die();
+            if(!$code ){
                 return new Response('Ce code est invalide ',Response::HTTP_CREATED);
             }
-                if($codes==$c && $statut=="retire" ){
+                else if($code->getCode()==$codes && $statut=="retire" ){
                     return new Response('Le code est déja retiré',Response::HTTP_CREATED);
                 }
-                else
-                {
+                
+                
                     $user=$this->getUser();
                     $code->setGuichetierRetrait($user);
                     //$beneficiaire->setNumeroPiece($values)
-            
                     $code->setEtat("retire");
                     $code->setDateRetrait(new \DateTime());
                     $code->setNumeroPieceb($values['numeroPieceb']);
                     $code->setTypePieceb($values['typePieceb']);
-
-
-
-                   $entityManager->persist($code);
+                    $entityManager->persist($code);
                     $entityManager->flush();
-
-                    return new Response('Retrait efféctué avec succés',Response::HTTP_CREATED);
-                }
+                return new Response('Retrait efféctué avec succés',Response::HTTP_CREATED);   
+            
 
      }
 
@@ -287,6 +283,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
      */
     public function lister(CompteRepository $compteRepository, SerializerInterface $serializer)
     {
+
         $comptes = $compteRepository->findAll();
         
         $data = $serializer->serialize($comptes, 'json');
