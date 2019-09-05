@@ -163,19 +163,14 @@ class SecurityController extends AbstractController
     public function login(Request $request,JWTEncoderInterface $JWTEncoder)
     {
         $values = json_decode($request->getContent());        
-
         $repo = $this->getDoctrine()->getRepository(Utilisateur::class);
         $user = $repo-> findOneBy(['username' => $values->username]);
-
-       
     if($user->getStatut()!=null && $user->getRoles()!="ROLE_SUPER_ADMIN" && $user->getPartenaire()!=null){
         if( $user->getStatut()=="bloquer"){
             return $this->json([
                 'message10'=> $user->getUsername().' Nous sommes désolé, ACCÉS REFUSÉ'
             ]);
         }
-
-
         elseif( $user->getPartenaire()->getStatut()=="bloquer"){
             return $this->json([
                 'message10' => 'ACCÉS REFUSÉ, Votre partenaire  du nom de '.$user->getPartenaire()->getEntreprise().'  est bloqué'
@@ -183,8 +178,6 @@ class SecurityController extends AbstractController
         }
     }
         
-
-
         $token = $JWTEncoder->encode([
             'username' => $user->getUsername(),
 	'roles'=>$user->getRoles(),

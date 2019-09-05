@@ -230,15 +230,14 @@ class PartenaireController extends AbstractController
     }
 
     /**
-     * @Route("/partenaires/bloquer", name="partenaireBlock", methods={"GET","POST"})
-     * @Route("/partenaires/debloquer", name="partenaireDeblock", methods={"GET","POST"})
+     * @Route("/partenaires/statut/{id}", name="partenaireBlock", methods={"GET","POST"})
      */
 
-    public function partenaireBloquer(Request $request, PartenaireRepository $partenaireRepo,EntityManagerInterface $entityManager): Response
+    public function partenaireBloquer(Partenaire $partenaire, Request $request, PartenaireRepository $partenaireRepo,EntityManagerInterface $entityManager): Response
     {
         $values = json_decode($request->getContent());
-        $partenaire=$partenaireRepo->findOneByEntreprise($values->entreprise);
-        echo $partenaire->getStatut();
+  $partenaires=$partenaireRepo->find($partenaire->getId());
+          echo $partenaire->getStatut();
         
         if($partenaire->getStatut()=="bloquer"){
             
@@ -301,7 +300,7 @@ class PartenaireController extends AbstractController
            );
     }    
 
-    /**
+    /**n
      * @Route("/listerdepots", name="listerdepots", methods={"GET","POST"})
      */
     public function listercomptedepots (DepotRepository $depotRepository, SerializerInterface $serializer, Request $request):Response

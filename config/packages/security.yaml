@@ -58,9 +58,3 @@ security:
         # - { path: ^/api/envoie, roles: ROLE_ADMIN_PARTENAIRE }
         # - { path: ^/api/envoie, roles: ROLE_ADMIN }
           
-
-
-
-     
-
-   

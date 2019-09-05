@@ -221,21 +221,19 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
         $form->submit($values);
        $codes=$transaction->getCode();
 
-
         $code=$trans->findOneBy(['code'=>$codes]);
                 // var_dump($code); die();
-
         //$c=$code->getCode();
-        $statut=$code->getEtat();
+        
        //var_dump($statut);  die();
             if(!$code ){
                 return new Response('Ce code est invalide ',Response::HTTP_CREATED);
             }
-                else if($code->getCode()==$codes && $statut=="retire" ){
+                $statut=$code->getEtat();
+
+                if($code->getCode()==$codes && $statut=="retire" ){
                     return new Response('Le code est déja retiré',Response::HTTP_CREATED);
                 }
-                
-                
                     $user=$this->getUser();
                     $code->setGuichetierRetrait($user);
                     //$beneficiaire->setNumeroPiece($values)
@@ -246,8 +244,6 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
                     $entityManager->persist($code);
                     $entityManager->flush();
                 return new Response('Retrait efféctué avec succés',Response::HTTP_CREATED);   
-            
-
      }
 
 
@@ -285,7 +281,6 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
     {
 
         $comptes = $compteRepository->findAll();
-        
         $data = $serializer->serialize($comptes, 'json');
 
         return new Response($data, 200, [
