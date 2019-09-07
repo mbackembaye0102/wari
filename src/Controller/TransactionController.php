@@ -19,6 +19,7 @@ use App\Form\TransactionType;
 use App\Form\UtilisateurType;
 use App\Form\BeneficiaireType;
 use App\Repository\PartenaireRepository;
+use App\Repository\UtilisateurRepository;
 use App\Repository\CompteRepository;
 use App\Repository\DepotRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +30,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -121,7 +123,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
      * @Route("/envoie", name="envoie", methods={"POST"}) 
      *@IsGranted({"ROLE_ADMIN_PARTENAIRE", "ROLE_USERS"})
      */
-    public function envoie (Request $request,EntityManagerInterface $entityManager){
+    public function envoie (CompteRepository $cpt,Request $request,EntityManagerInterface $entityManager){
         // AJOUT OPERATION
         $transaction= new Transaction();
         $form = $this->createForm(TransactionType::class, $transaction);
@@ -140,7 +142,6 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
         // recuperer l'id du guichetier
         $user=$this->getUser();
         $transaction->setGuichetier($user);
-
 
            // recuperer la valeur du frais
            $repository=$this->getDoctrine()->getRepository(Tarif::class);
@@ -177,22 +178,42 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
            $etat=($valeur*30)/100;
            $retrait=($valeur*10)/100;
 
-           // dimunition du monatnt envoyé au niveau du solde et ajout de la commission pour wari
-           $comptes->setSolde($comptes->getSolde()-$transaction->getMontant()+ $wari);
+           // dimunition du monatnt envoyé au niveau du solde et ajout de la commission pour partenaire
+           $comptes->setSolde($comptes->getSolde()-$transaction->getMontant()+ $part);
+
 
            $transaction->setCommissionWari($wari);
            $transaction->setCommissionPartenaire($part);
            $transaction->setCommissionEtat($etat);
            $transaction->setCommissionRetrait($retrait);
 
+           //  attribution de la commission a wari
+            $cpts=$cpt->findAll();
+         // var_dump($cpts); die();
+
+          foreach ($cpts as $cptes) {
+              $cptes->getSolde();
+              $cptes->getPartenaire();
+              if($cptes->getPartenaire()==NULL){
+                  $c=$cptes->getSolde();
+                  break;
+              }
+            }
+      // var_dump($c);
+         //var_dump($cpts->getNumeroCompte()); 
+        //  die();
+          $cptes->setSolde($c+$wari);
+          //var_dump($cptes); die();
+
 
         $total=$montant+$values->getValeur();
         $transaction->setTotal($total);
         $transaction->setEtat('envoye');
-
         $entityManager = $this->getDoctrine()->getManager();
      
         $entityManager->persist($transaction);
+              //  $entityManager->persist($cptes);
+
         $entityManager->flush();
 
             $data = [
@@ -225,7 +246,9 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
                 // var_dump($code); die();
         //$c=$code->getCode();
         
-       //var_dump($statut);  die();
+       //var_dump($code->getCommissionRetrait());  die();
+        //var_dump( $this->getUser()->getCompte()->getSolde());  die();
+       
             if(!$code ){
                 return new Response('Ce code est invalide ',Response::HTTP_CREATED);
             }
@@ -241,6 +264,10 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
                     $code->setDateRetrait(new \DateTime());
                     $code->setNumeroPieceb($values['numeroPieceb']);
                     $code->setTypePieceb($values['typePieceb']);
+                    $retrait=$code->getCommissionRetrait();
+                    $solde=$this->getUser()->getCompte();
+                    $solde->setSolde($solde->getSolde()+$retrait);
+
                     $entityManager->persist($code);
                     $entityManager->flush();
                 return new Response('Retrait efféctué avec succés',Response::HTTP_CREATED);   
@@ -281,7 +308,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
     {
 
         $comptes = $compteRepository->findAll();
-        $data = $serializer->serialize($comptes, 'json');
+        $data = $serializer->serialize($comptes, 'json',['groups'=>['liste-comptes']]);
 
         return new Response($data, 200, [
             'Content-Type'=>'application/json'
@@ -294,12 +321,79 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
     public function listerdepot(DepotRepository $depotRepository, SerializerInterface $serializer)
     {
         $depots = $depotRepository->findAll();
-        
-        $data = $serializer->serialize($depots, 'json');
+        //$data = $serializer->serialize($depots, 'json');
+        $data = $serializer->serialize($depots, 'json',['groups'=>['liste-depot']]);
+        //var_dump($depots); die();
+
 
         return new Response($data, 200, [
             'Content-Type'=>'application/json'
         ]);
     }
+
+  
+  /**
+     * @Route("/listerdepotuser", name="listerdepotuser", methods={"GET", "POST"})
+     */
+    public function listerdepotuser(DepotRepository $depotRepository, SerializerInterface $serializer, Request $request):Response
+    {
+        $values=$request->request->all();
+        $user=$this->getUser();
+       // $depot= new Depot();
+        $depots=$user->getDepots();
+        //var_dump($depots); die();
+        $users=$this->getDoctrine()->getRepository('App:Depot')->findBy(['utilisateur'=>$user]);
+        $values = $serializer->serialize($users, 'json',['groups'=>['liste-depot']]);
+        return new Response(
+           $values,200,[
+               'Content-Type' => 'application/json'
+           ]
+           );
+    }  
+
+/**
+     *@Route("/detailCompte",name="detailCompte", methods ={"GET","POST"})
+     */
+
+    public function detailCompte (Request $request,EntityManagerInterface $entityManager, ValidatorInterface $validator , SerializerInterface $serializer)
+    {
+        $values = json_decode($request->getContent());
+        $compte = new Compte();
+        $compte->setNumeroCompte($values->numeroCompte);
+      //  var_dump($values->numerocompte); die;
+   // $a="SN9952395704";
+      //  $numero=$form->get('numerocompte')->getData();
+
+        $repository = $this->getDoctrine()->getRepository(Compte::class);
+        $compte = $repository->findByNumeroCompte($values->numeroCompte);
+     
+       $data = $serializer->serialize($compte, 'json',['groups'=>['liste-compte']]);
+               // $data = $serializer->serialize($compte, 'json');
+
+        return new Response($data, 200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+
+    /**
+     * @Route("/listertransaction", name="listertransaction", methods={"GET","POST"})
+     */
+    public function listertransactions (TransactionRepository $transRepository, SerializerInterface $serializer, Request $request):Response
+    {
+        $values=$request->request->all();
+        $user=$this->getUser();
+        $transaction=$user->getGuichetier();
+        $transactionR=$user->getGuichetierRetrait();
+
+        $users=$this->getDoctrine()->getRepository('App:Utilisateur')->findBy(['guichetier'=>$transaction, 'guichetierRetrait'=>$transactionR]);
+        $values = $serializer->serialize($users, 'json');
+       
+        return new Response(
+           $values,200,[
+               'Content-Type' => 'application/json'
+           ]
+           );
+    }    
 
 }

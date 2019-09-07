@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Partenaire;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 
 /**
@@ -19,16 +20,19 @@ class Compte
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"liste-compte","liste-depot","liste-comptes"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", unique=true)
+     * @Groups({"liste-compte","liste-depot","liste-user","liste-comptes"})
      */
     private $numeroCompte;
 
     /**
      * @ORM\Column(type="bigint")
+     * @Groups({"liste-compte", "liste-depot","liste-user","liste-comptes"})
      */
     private $solde;
 
@@ -36,17 +40,22 @@ class Compte
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Depot", mappedBy="compte")
+     * @Groups({"liste-depot","liste-depot","liste-comptes"})
      */
     private $depots;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire", inversedBy="comptePartenaire")
      * @ORM\JoinColumn(nullable=true)
+    * @Groups({"liste-compte","liste-depot","liste-comptes"})
+
      */
     private $partenaire;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Utilisateur", mappedBy="compte")
+     * @Groups({"liste-depot","liste-compte","liste-user"})
+
      */
     private $utilisateurs;
 

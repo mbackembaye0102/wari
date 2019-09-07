@@ -129,7 +129,7 @@ class SecurityController extends AbstractController
                     'content_type'=>'application/json'
                 ]);
             }
-
+            var_dump($user); die();
              $entityManager = $this->getDoctrine()->getManager();
              $entityManager->persist($user);
              $entityManager->flush();
@@ -225,6 +225,7 @@ class SecurityController extends AbstractController
      */
     public function userBloquer( Utilisateur $users, Request $request, UtilisateurRepository $userRepo,EntityManagerInterface $entityManager): Response
     {
+        
         $values = json_decode($request->getContent());
                 //var_dump($users->getId());  die();
 

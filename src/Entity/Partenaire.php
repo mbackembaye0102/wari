@@ -10,6 +10,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 
 /**
@@ -23,50 +24,60 @@ class Partenaire
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"liste-compte"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Groups({"liste-compte","liste-user","liste-comptes"})
      */
     private $entreprise;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Groups({"liste-compte","liste-user","liste-comptes"})
      */
     private $raisonSocial;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Groups({"liste-compte","liste-user","liste-comptes"})
      */
     private $ninea;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"liste-compte"})
      */
     private $adresse;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")
+     * @Groups({"liste-compte"})   
      */
     private $statut;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Utilisateur", mappedBy="partenaire")
+     * @Groups({"liste-user","liste-comptes"})
+
      */
     private $utilisateurs;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Compte", mappedBy="partenaire")
+     * @Groups({"liste-depot","liste-compte","liste-comptes", "liste-user"})
      */
     private $comptes;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Compte", mappedBy="partenaire")
+     * @Groups({"liste-user","liste-comptes","liste-compte","liste-comptes"})
      */
     private $comptePartenaire;
 

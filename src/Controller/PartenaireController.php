@@ -271,15 +271,12 @@ class PartenaireController extends AbstractController
         $user=$this->getUser();
         $partenaire=$user->getPartenaire();
         $users=$this->getDoctrine()->getRepository('App:Utilisateur')->findBy(['partenaire'=>$partenaire]);
-        $values = $serializer->serialize($users, 'json');
-    
-       
+        $values = $serializer->serialize($users, 'json',['groups'=>['liste-user']]);
         return new Response(
            $values,200,[
                'Content-Type' => 'application/json'
            ]
            );
-       
     }    
 
       /**

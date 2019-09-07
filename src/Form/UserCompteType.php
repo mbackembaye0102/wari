@@ -14,7 +14,6 @@ class UserCompteType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-           
         ->add('compte',EntityType::class,['class'=>Compte::class, 'choice_label'=>'numeroCompte'])
         ;
     }

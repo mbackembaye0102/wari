@@ -14,6 +14,8 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 
 /**
@@ -27,17 +29,20 @@ class Utilisateur implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"liste-user","liste-comptes"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")
+     * @Groups({"liste-compte","liste-depot","liste-user"})   
      */
     private $username;
 
     /**
      * @ORM\Column(type="json")
+     * @Groups({"liste-user"})
      */
     private $roles = [];
 
@@ -50,34 +55,40 @@ class Utilisateur implements UserInterface
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Groups({"liste-compte","liste-depot","liste-user"})
      */
     private $prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Groups({"liste-compte","liste-depot","liste-user"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="integer", length=20, unique=true)
      * @Assert\Positive
-     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
+     * @Assert\NotBlank(message="Veuillez resnseigner ce champ")
+     * @Groups({"liste-user"})   
      */
     private $telephone;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"liste-user"})
      */
     private $statut;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire", inversedBy="utilisateurs")
+     * @Groups({"liste-user","liste-comptes"})
      */
     private $partenaire;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Profil", inversedBy="utilisateurs")
+     * @Groups({"liste-user"})
      */
     private $profil;
 
@@ -107,11 +118,13 @@ class Utilisateur implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Depot", mappedBy="utilisateur")
+     * @Groups({"liste-depot"})
      */
     private $depots;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Compte", inversedBy="utilisateurs")
+     * @Groups({"liste-depot","liste-user","liste-comptes"})
      */
     private $compte;
 
