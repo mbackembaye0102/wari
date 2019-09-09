@@ -276,22 +276,21 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
 
     
      /**
-     * @Route("/addCompte/{id}", name="ajou_compte", methods={"POST"})
+     * @Route("/addCompte", name="ajou_compte", methods={"POST","PUT"})
      *@IsGranted({"ROLE_ADMIN_PARTENAIRE"})
      */
-    public function update_user (Request $request, Utilisateur $user,  EntityManagerInterface $entityManager)
+    public function addcompteuser (Request $request,  CompteRepository $comptes, UtilisateurRepository $users, EntityManagerInterface $entityManager)
     {
+        $values =$request->request->all();
 
-        $form = $this->createForm(UserCompteType::class, $user);
-        $data=$request->request->all();
-        
-        $form->handleRequest($request);
-        $form->submit($data);
-        //$users=$user->getCompte()->getPartenaire();
-      //  var_dump($users); die();
-        //$comptes=$user->getCompte();
+        $ut=$users->findOneBy(['username'=>$values['username']]);
+        $c=$comptes->findById($values['compte']);
 
-        $entityManager->persist($user);
+        if(!$ut ){
+          return new Response("Ce username n'existe pas ",Response::HTTP_CREATED);
+        }
+      
+          $ut->setCompte($c[0]);
             $entityManager->flush();
             $data = [
                 'status14' => 200,
@@ -301,7 +300,7 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
     }
 
 
-/**
+     /**
      * @Route("/listercompte", name="listercompte", methods={"GET"})
      */
     public function lister(CompteRepository $compteRepository, SerializerInterface $serializer)
@@ -380,11 +379,11 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
      * @Route("/listertransaction", name="listertransaction", methods={"GET","POST"})
      */
     public function listertransactions (TransactionRepository $transRepository, SerializerInterface $serializer, Request $request):Response
-    {
+    {   $trans=new Transaction();
         $values=$request->request->all();
         $user=$this->getUser();
-        $transaction=$user->getGuichetier();
-        $transactionR=$user->getGuichetierRetrait();
+        $transaction=$trans->getGuichetier();
+        $transactionR=$trans->getGuichetierRetrait();
 
         $users=$this->getDoctrine()->getRepository('App:Utilisateur')->findBy(['guichetier'=>$transaction, 'guichetierRetrait'=>$transactionR]);
         $values = $serializer->serialize($users, 'json');
@@ -396,4 +395,60 @@ public function new(Request $request,EntityManagerInterface $entityManager ): Re
            );
     }    
 
+
+/**
+     *@Route("/recherchecompte",name="recherchecompte", methods ={"GET","POST"})
+     */
+
+    public function recherchecompte (Request $request,EntityManagerInterface $entityManager, ValidatorInterface $validator , SerializerInterface $serializer)
+    {
+        $values = json_decode($request->getContent());
+        $compte = new Compte();
+        $compte->setNumeroCompte($values->numeroCompte);
+
+        $repository = $this->getDoctrine()->getRepository(Compte::class);
+        $compte = $repository->findBynumeroCompte($values->numeroCompte);
+     
+        $data = $serializer->serialize($compte, 'json',['groups'=>['comptes']]);
+        return new Response($data, 200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+  /**
+     *@Route("/recherchecode",name="recherchecode", methods ={"GET","POST"})
+     */
+
+    public function recherchecode (Request $request,EntityManagerInterface $entityManager, ValidatorInterface $validator , SerializerInterface $serializer)
+    {
+        $values = json_decode($request->getContent());
+        $transaction = new Transaction();
+        $transaction->setCode($values->code);
+
+        $repository = $this->getDoctrine()->getRepository(Transaction::class);
+        $transaction = $repository->findBycode($values->code);
+        $data = $serializer->serialize($transaction, 'json',['groups'=>['liste-code']]);
+        return new Response($data, 200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+
+     /**
+     *@Route("/rechercheuser",name="rechercheuser", methods ={"GET","POST"})
+     */
+
+    public function rechercheuser (Request $request,EntityManagerInterface $entityManager, ValidatorInterface $validator , SerializerInterface $serializer)
+    {
+        $values = json_decode($request->getContent());
+        $user = new Utilisateur();
+        $user->setUsername($values->username);
+
+        $repository = $this->getDoctrine()->getRepository(Utilisateur::class);
+        $Utilisateur = $repository->findByusername($values->username);
+        $data = $serializer->serialize($Utilisateur, 'json',['groups'=>['user']]);
+        return new Response($data, 200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
 }

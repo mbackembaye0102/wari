@@ -24,60 +24,60 @@ class Partenaire
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"liste-compte"})
+     * @Groups({"liste-compte","comptes"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
-     * @Groups({"liste-compte","liste-user","liste-comptes"})
+     * @Groups({"liste-compte","liste-user","liste-comptes","comptes","user"})
      */
     private $entreprise;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
-     * @Groups({"liste-compte","liste-user","liste-comptes"})
+     * @Groups({"liste-compte","liste-user","liste-comptes","comptes"})
      */
     private $raisonSocial;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
-     * @Groups({"liste-compte","liste-user","liste-comptes"})
+     * @Groups({"liste-compte","liste-user","liste-comptes","comptes","user"})
      */
     private $ninea;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"liste-compte"})
+     * @Groups({"liste-compte","comptes"})
      */
     private $adresse;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")
-     * @Groups({"liste-compte"})   
+     * @Groups({"liste-compte","comptes"})   
      */
     private $statut;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Utilisateur", mappedBy="partenaire")
-     * @Groups({"liste-user","liste-comptes"})
+     * @Groups({"liste-user","liste-comptes","comptes","user"})
 
      */
     private $utilisateurs;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Compte", mappedBy="partenaire")
-     * @Groups({"liste-depot","liste-compte","liste-comptes", "liste-user"})
+     * @Groups({"liste-depot","liste-compte","liste-comptes", "liste-user","comptes"})
      */
     private $comptes;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Compte", mappedBy="partenaire")
-     * @Groups({"liste-user","liste-comptes","liste-compte","liste-comptes"})
+     * @Groups({"liste-user","liste-comptes","liste-compte","liste-comptes","comptes"})
      */
     private $comptePartenaire;
 

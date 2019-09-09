@@ -29,20 +29,20 @@ class Utilisateur implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"liste-user","liste-comptes"})
+     * @Groups({"liste-user","liste-comptes","user"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")
-     * @Groups({"liste-compte","liste-depot","liste-user"})   
+     * @Groups({"liste-compte","liste-depot","liste-user","liste-code","user"})   
      */
     private $username;
 
     /**
      * @ORM\Column(type="json")
-     * @Groups({"liste-user"})
+     * @Groups({"liste-user","liste-code","user"})
      */
     private $roles = [];
 
@@ -55,14 +55,14 @@ class Utilisateur implements UserInterface
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
-     * @Groups({"liste-compte","liste-depot","liste-user"})
+     * @Groups({"liste-compte","liste-depot","liste-user","user"})
      */
     private $prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
-     * @Groups({"liste-compte","liste-depot","liste-user"})
+     * @Groups({"liste-compte","liste-depot","liste-user","liste-code","user"})
      */
     private $nom;
 
@@ -70,25 +70,25 @@ class Utilisateur implements UserInterface
      * @ORM\Column(type="integer", length=20, unique=true)
      * @Assert\Positive
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")
-     * @Groups({"liste-user"})   
+     * @Groups({"liste-user","liste-code","user"})   
      */
     private $telephone;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"liste-user"})
+     * @Groups({"liste-user","liste-code","user"})
      */
     private $statut;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire", inversedBy="utilisateurs")
-     * @Groups({"liste-user","liste-comptes"})
+     * @Groups({"liste-user","liste-comptes","user"})
      */
     private $partenaire;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Profil", inversedBy="utilisateurs")
-     * @Groups({"liste-user"})
+     * @Groups({"liste-user","liste-code"})
      */
     private $profil;
 
@@ -118,23 +118,25 @@ class Utilisateur implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Depot", mappedBy="utilisateur")
-     * @Groups({"liste-depot"})
+     * @Groups({"liste-depot","liste-code"})
      */
     private $depots;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Compte", inversedBy="utilisateurs")
-     * @Groups({"liste-depot","liste-user","liste-comptes"})
+     * @Groups({"liste-depot","liste-user","liste-comptes","liste-code"})
      */
     private $compte;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Transaction", mappedBy="guichetier")
+     * @Groups({"liste-code"})
      */
     private $transactions;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Transaction", mappedBy="guichetierRetrait")
+     * @Groups({"liste-code"})
      */
     private $transactionRetrait;
 

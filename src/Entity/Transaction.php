@@ -6,6 +6,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 /**
  * @ApiResource()
@@ -17,47 +19,56 @@ class Transaction
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"liste-code"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string")
+     * @Groups({"liste-code"})
      */
     private $code;
 
     /**
      * @ORM\Column(type="bigint")
+     * @Groups({"liste-code"})
      */
     private $montant;
 
     /**
      * @ORM\Column(type="bigint")
+     * @Groups({"liste-code"})
      */
     private $frais;
 
     /**
      * @ORM\Column(type="bigint")
+     * @Groups({"liste-code"})
      */
     private $total;
 
     /**
      * @ORM\Column(type="bigint")
+     * @Groups({"liste-code"})
      */
     private $commissionWari;
 
     /**
      * @ORM\Column(type="bigint", nullable=true)
+     * @Groups({"liste-code"})
      */
     private $CommissionPartenaire;
 
     /**
      * @ORM\Column(type="bigint", nullable=true)
+     * @Groups({"liste-code"})
      */
     private $commissionEtat;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Utilisateur", inversedBy="transactions")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"liste-code"})
      */
     private $guichetier;
 
@@ -66,11 +77,13 @@ class Transaction
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"liste-code"})
      */
     private $dateEnvoie;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"liste-code"})
      */
     private $dateRetrait;
 
@@ -79,66 +92,79 @@ class Transaction
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Utilisateur", inversedBy="transactionRetrait")
+     * @Groups({"liste-code"})
      */
     private $guichetierRetrait;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"liste-code"})
      */
     private $commissionRetrait;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"liste-code"})
      */
     private $prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"liste-code"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"liste-code"})
      */
     private $telephone;
 
     /**
      * @ORM\Column(type="bigint", nullable=true)
+     * @Groups({"liste-code"})
      */
     private $numeroPiece;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"liste-code"})
      */
     private $typePiece;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"liste-code"})
      */
     private $etat;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"liste-code"})
      */
     private $prenomb;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"liste-code"})
      */
     private $nomb;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"liste-code"})
      */
     private $telephoneb;
 
     /**
      * @ORM\Column(type="bigint", nullable=true)
+     * @Groups({"liste-code"})
      */
     private $numeroPieceb;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"liste-code"})
      */
     private $typePieceb;
 

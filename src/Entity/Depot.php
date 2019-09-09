@@ -31,13 +31,13 @@ class Depot
      * @Assert\NotBlank(message="Veuillez resnseigner ce champ")   
      * @Assert\Positive
      * @Assert\GreaterThan(75000, message="Un salaire doit etre superieur  ou égal à 75000")
-     * @Groups({"liste-depot","liste-compte"})
+     * @Groups({"liste-depot","liste-compte","liste-code"})
      */
     private $montant;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"liste-depot","liste-compte"})
+     * @Groups({"liste-depot","liste-compte","liste-code"})
      */
     private $dateDepot;
 

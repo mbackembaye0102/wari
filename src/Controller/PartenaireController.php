@@ -297,7 +297,7 @@ class PartenaireController extends AbstractController
            );
     }    
 
-    /**n
+    /**
      * @Route("/listerdepots", name="listerdepots", methods={"GET","POST"})
      */
     public function listercomptedepots (DepotRepository $depotRepository, SerializerInterface $serializer, Request $request):Response

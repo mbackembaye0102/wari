@@ -20,20 +20,20 @@ class Compte
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"liste-compte","liste-depot","liste-comptes"})
+     * @Groups({"liste-compte","liste-depot","liste-comptes","comptes"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", unique=true)
-     * @Groups({"liste-compte","liste-depot","liste-user","liste-comptes"})
+     * @Groups({"liste-compte","liste-depot","liste-user","liste-comptes","liste-code","comptes","user"})
      */
     private $numeroCompte;
 
     /**
      * @ORM\Column(type="bigint")
-     * @Groups({"liste-compte", "liste-depot","liste-user","liste-comptes"})
-     */
+     * @Groups({"liste-compte", "liste-depot","liste-user","liste-comptes","comptes","user"})
+    */
     private $solde;
 
   
@@ -47,14 +47,14 @@ class Compte
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire", inversedBy="comptePartenaire")
      * @ORM\JoinColumn(nullable=true)
-    * @Groups({"liste-compte","liste-depot","liste-comptes"})
+    * @Groups({"liste-compte","liste-depot","liste-comptes","comptes"})
 
      */
     private $partenaire;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Utilisateur", mappedBy="compte")
-     * @Groups({"liste-depot","liste-compte","liste-user"})
+     * @Groups({"liste-depot","liste-compte","liste-user","liste-code","user"})
 
      */
     private $utilisateurs;
@@ -169,8 +169,6 @@ class Compte
                 $utilisateur->setCompte(null);
             }
         }
-
         return $this;
     }
-
 }

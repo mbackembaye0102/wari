@@ -117,7 +117,6 @@ class SecurityController extends AbstractController
             }
             $user->setRoles($role);
             $user->setStatut("debloquer");
-
             // recup id partenaire
             $users=$this->getUser()->getPartenaire();
             $user->setPartenaire($users);

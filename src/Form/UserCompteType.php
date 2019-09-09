@@ -14,16 +14,18 @@ class UserCompteType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
+        ->add('username')
         ->add('compte',EntityType::class,['class'=>Compte::class, 'choice_label'=>'numeroCompte'])
         ;
     }
+
+    
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
             'data_class' => Utilisateur::class,
             'csrf_protection'=>false
-
         ]);
     }
 }
